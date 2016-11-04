@@ -1,0 +1,50 @@
+[[local|localrc]]
+PIP_UPGRADE=True
+DATABASE_PASSWORD=openstack
+RABBIT_PASSWORD=openstack
+SERVICE_PASSWORD=openstack
+ADMIN_PASSWORD=openstack
+SERVICE_TOKEN=a682f596-76f3-11e3-b3b2-e716f9080d50
+
+# where the stack.sh log goes
+LOGFILE=$TOP_DIR/logs/stack.sh.log
+
+# where the screen logfiles go
+SCREEN_LOGDIR=$DEST/logs/screen
+
+HOST_IP=$(ip -o -4 addr show eth0 | sed 's#^.*inet \([0-9.]*\).*#\1#')
+LIBS_FROM_GIT="python-cinderclient,python-novaclient,python-keystoneclient,python-openstackclient"
+
+# List which cinder backends to enable.  Include lvm:lvmdriver-1 for LVM
+CINDER_ENABLED_BACKENDS=lvm,nfs
+
+# Set no_proxy if not already set
+export no_proxy=${no_proxy:-localhost,127.0.0.1,localaddress,.localdomain.com,$HOST_IP}
+
+[[post-config|$GLANCE_API_CONF]]
+[DEFAULT]
+default_store=file
+
+# entries to add to /etc/cinder/cinder.conf before cinder is started
+[[post-config|$CINDER_CONF]]
+
+[lvm]
+iscsi_helper = tgtadm
+volume_group = stack-volumes-lvm
+volume_driver = cinder.volume.drivers.lvm.LVMVolumeDriver
+volume_backend_name = lvm
+
+[nfs]
+volume_driver = cinder.volume.drivers.nfs.NfsDriver
+nfs_shares_config = /etc/cinder/nfsshares
+nfs_sparsed_volumes = true
+nfs_oversub_ratio = 1.0
+nfs_used_ratio = .80
+volume_backend_name = nfs
+
+# Use post-extra because the tempest configuration file is
+# overwritten with the .sample after post-config.
+[[post-extra|$TEMPEST_CONFIG]]
+[volume]
+storage_protocol=iSCSI
+vendor_name=Open Source
