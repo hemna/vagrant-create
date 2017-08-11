@@ -119,11 +119,14 @@ else
 fi
 
 cd $VAGRANT_NAME
+echo "CWD=$PWD"
 
 # link to dot files in home dir
 for file in .bashrc .vim .vimrc .gitconfig .liquidprompt ; do
     if [ -e $HOME/$file ] ; then
-        ln -s $HOME/$file files/home
+        cmd="ln -s $HOME/$file files/home"
+        echo "Creating symlink : $cmd"
+        runit=`$cmd`
     fi
 done
 
