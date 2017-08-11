@@ -10,11 +10,14 @@ SERVICE_TOKEN=a682f596-76f3-11e3-b3b2-e716f9080d50
 LOGFILE=$TOP_DIR/logs/stack.sh.log
 
 # where the screen logfiles go
+USE_SCREEN=True
 SCREEN_LOGDIR=$DEST/logs/screen
 
 HOST_IP=$(ip -o -4 addr show eth0 | sed 's#^.*inet \([0-9.]*\).*#\1#')
 
 LIBS_FROM_GIT="python-cinderclient"
+
+enable_service b-bak
 
 # List which cinder backends to enable.  Include lvm:lvmdriver-1 for LVM
 CINDER_ENABLED_BACKENDS=lvm
